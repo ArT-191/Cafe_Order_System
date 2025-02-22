@@ -1,0 +1,100 @@
+{% extends 'orders/base.html' %}
+{% load static %}
+
+{% block content %}
+<script src="{% static 'js/modal.js' %}"></script>
+<div class="container mt-4">
+    <h2 class="mb-4">Список заказов</h2>
+
+    <!-- Фильтрация по статусу -->
+    <form method="GET" class="mb-3">
+        <div class="row g-2">
+            <div class="col-md-3">
+                <input type="number" name="table_number" class="form-control" placeholder="Номер стола" value="{{ request.GET.table_number }}">
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-control">
+                    <option value="">Все статусы</option>
+                    <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>В ожидании</option>
+                    <option value="ready" {% if request.GET.status == 'ready' %}selected{% endif %}>Готово</option>
+                    <option value="paid" {% if request.GET.status == 'paid' %}selected{% endif %}>Оплачено</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">Фильтр</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Таблица заказов -->
+    <table class="table table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Стол</th>
+                <th>Блюда</th>
+                <th>Статус</th>
+                <th>Дата</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.id }}</td>
+                <td>{{ order.table_number }}</td>
+                <td>
+                    {% for item in order.items %}
+                        {{ item.name }} ({{ item.price }} руб.)<br>
+                    {% empty %}
+                        <em>Нет блюд</em>
+                    {% endfor %}
+                </td>
+                <td>
+                    <span class="badge 
+                        {% if order.status == 'pending' %}bg-warning text-dark
+                        {% elif order.status == 'ready' %}bg-primary
+                        {% elif order.status == 'paid' %}bg-success
+                        {% endif %}">
+                        {{ order.get_status_display }}
+                    </span>
+                </td>
+                <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
+                <td>
+                    <a href="{% url 'order_update' order.id %}" class="btn btn-warning btn-sm">✏️</a>
+                    <button class="btn btn-danger btn-sm" onclick="confirmDelete({{ order.id }})">🗑️</button>
+                    <form id="delete-form-{{ order.id }}" action="{% url 'order_delete' order.id %}" method="post" style="display: none;">
+                        {% csrf_token %}
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center"><em>Заказов нет</em></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Скрипт для подтверждения удаления -->
+<script>
+    function confirmDelete(orderId) {
+        if (confirm("Вы уверены, что хотите удалить этот заказ?")) {
+            document.getElementById("delete-form-" + orderId).submit();
+        }
+    }
+</script>
+
+<!-- Кнопка "Выручка" -->
+<button id="revenue-btn" class="btn btn-success">Выручка</button>
+
+<!-- Модальное окно -->
+<div id="revenue-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Общая выручка</h2>
+        <p id="revenue-amount">Загрузка...</p>
+    </div>
+</div>
+{% endblock %}

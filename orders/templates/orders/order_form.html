@@ -1,0 +1,90 @@
+{% extends "orders/base.html" %}
+
+{% block title %}Редактирование заказа{% endblock %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Редактирование заказа</h2>
+
+    
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label class="form-label">Номер стола</label>
+            <input type="number" name="table_number" class="form-control" value="{{ form.instance.table_number }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Статус</label>
+            <select name="status" class="form-select">
+                {% for value, label in form.fields.status.choices %}
+                <option value="{{ value }}" {% if form.instance.status == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Блюда</label>
+            <div id="items-container">
+                {% for item in form.instance.items %}
+                <div class="input-group mb-2">
+                    <input type="text" name="item_name" class="form-control" placeholder="Название" value="{{ item.name }}" required>
+                    <input type="number" name="item_price" class="form-control" placeholder="Цена" value="{{ item.price }}" required>
+                    <button type="button" class="btn btn-danger remove-item">X</button>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" id="add-item" class="btn btn-success mt-2">Добавить блюдо</button>
+        </div>
+
+        <input type="hidden" name="items_json" id="items-json">
+
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="{% url 'order_list' %}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const itemsContainer = document.getElementById("items-container");
+    const addItemButton = document.getElementById("add-item");
+    const itemsJsonInput = document.getElementById("items-json");
+
+    // Добавление нового блюда
+    addItemButton.addEventListener("click", function() {
+        const itemRow = document.createElement("div");
+        itemRow.classList.add("input-group", "mb-2");
+        itemRow.innerHTML = `
+            <input type="text" name="item_name" class="form-control" placeholder="Название" required>
+            <input type="number" name="item_price" class="form-control" placeholder="Цена" required>
+            <button type="button" class="btn btn-danger remove-item">X</button>
+        `;
+        itemsContainer.appendChild(itemRow);
+    });
+
+    // Удаление блюда
+    itemsContainer.addEventListener("click", function(event) {
+        if (event.target.classList.contains("remove-item")) {
+            event.target.closest(".input-group").remove();
+        }
+    });
+
+    // Перед отправкой формы преобразуем в JSON
+    document.querySelector("form").addEventListener("submit", function(event) {
+        const items = [];
+        document.querySelectorAll("#items-container .input-group").forEach(row => {
+            const name = row.querySelector("input[name='item_name']").value;
+            const price = row.querySelector("input[name='item_price']").value;
+            items.push({ name: name, price: parseFloat(price) });
+        });
+        itemsJsonInput.value = JSON.stringify(items);
+    });
+});
+</script>
+
+{% endblock %}
