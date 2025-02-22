@@ -42,21 +42,21 @@ HTML, CSS, Bootstrap (только для стилизации), чистый Ja
 
 1. Клонировать репозиторий:
 
-    git clone https://github.com/ArT-191/Cafe_Order_System.git
+        git clone https://github.com/ArT-191/Cafe_Order_System.git
    
-    cd Cafe_Order_System
+        cd Cafe_Order_System
    
 3. Создать и активировать виртуальное окружение:
 
-    python -m venv venv
+        python -m venv venv
    
-    source venv/bin/activate  # MacOS/Linux
+        source venv/bin/activate  # MacOS/Linux
    
-    venv\Scripts\activate     # Windows
+        venv\Scripts\activate     # Windows
 
 5. Установить зависимости:
 
-     pip install -r requirements.txt
+         pip install -r requirements.txt
 
 7. Настроить базу данных:
 
@@ -64,11 +64,11 @@ HTML, CSS, Bootstrap (только для стилизации), чистый Ja
    
     Применить миграции:
    
-    python manage.py migrate
+        python manage.py migrate
     
 9. Запустить сервер:
 
-    python manage.py runserver
+        python manage.py runserver
     
 
 ✅ Тестирование
